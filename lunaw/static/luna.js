@@ -1,5 +1,22 @@
+var ws;
+
+function connect(){
+    ws = new WebSocket("ws://"+window.location.hostname+":8888/ws");
+    ws.onopen = function() {
+            ws.send("hello");
+    };
+    ws.onmessage = function (evt) {
+            $('body')[0].style.backgroundColor = evt.data;
+    };
+    ws.onerror = function (evt) {
+            alert("ERROR");
+    };
+    ws.onclose = function() {
+            alert("CLOSE");
+    };
+}
+
 $(function() {
-    //Set up tabs
     $('#modes a').click(function (e) {
         e.preventDefault()
         $(this).tab('show')
@@ -9,14 +26,10 @@ $(function() {
     var color;
     setInterval(function () {
         if(color_changed) {
-            $.getJSON($SCRIPT_ROOT + '/_manual_color', {
-                color: color
-            }, function(data) {
-                $('body')[0].style.backgroundColor = data.result;
-            });
+            ws.send(color);
             color_changed = false;
         }
-    }, 100);
+    }, 40);
 
     $('#colpick').colorpicker({
         customClass: 'colorpicker-2x',
@@ -36,4 +49,6 @@ $(function() {
         color_changed = true;
         color = event.color.toHex();
     });
+
+    connect();
 });
