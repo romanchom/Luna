@@ -2,37 +2,35 @@
 <html lang="en">
 <head>
 	<title>Luna Web Interface</title>
-	<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
-	<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-colorpicker/dist/css/bootstrap-colorpicker.min.css') }}">
-	<link rel="stylesheet" href="{{ url_for('static', filename='luna.css') }}">
-	<script src="{{ url_for('static', filename='jquery-1.11.3.min.js') }}"></script>
-	<script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
-	<script src="{{ url_for('static', filename='bootstrap-colorpicker/dist/js/bootstrap-colorpicker.min.js') }}"></script>
-	<script type=text/javascript>
-	  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-	</script>
-	<script src="{{ url_for('static', filename='luna.js') }}"></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="static/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="static/bootstrap-colorpicker/dist/css/bootstrap-colorpicker.min.css">
+	<link rel="stylesheet" href="static/luna.css">
+	<script src="static/jquery-1.11.3.min.js"></script>
+	<script src="static/bootstrap/js/bootstrap.min.js"></script>
+	<script src="static/bootstrap-colorpicker/dist/js/bootstrap-colorpicker.min.js"></script>
 </head>
 <body>
 	<div class="container bs-docs-container">
-			<h1>Luna Web Interface</h1>
-			<div>
-				<!-- Nav tabs -->
-				<ul id="modes" class="nav nav-tabs" role="tablist">
-					<li role="presentation" class="active"><a href="#manual" aria-controls="manual" role="tab" data-toggle="tab">Manual</a></li>
-					<li role="presentation"><a href="#programs" aria-controls="profile" role="tab" data-toggle="tab">Programs</a></li>
-				</ul>
+		<h1>Luna Web Interface</h1>
+		<div>
+			<!-- Nav tabs -->
+			<ul id="modes" class="nav nav-tabs" role="tablist">
+				<li role="presentation" class="active"><a href="#manual" aria-controls="manual" role="tab" data-toggle="tab">Manual</a></li>
+				<li role="presentation"><a href="#programs" aria-controls="profile" role="tab" data-toggle="tab">Programs</a></li>
+			</ul>
 
-				<!-- Tab panes -->
-				<div class="tab-content">
-					<div role="tabpanel" class="tab-pane fade in active" id="manual">
-						<div class="well">
-							<div id="colpick" data-container="#colpick" data-color="#ef0e0e" data-inline="true" data-format="hex"></div>
-						</div>
+			<!-- Tab panes -->
+			<div class="tab-content">
+				<div role="tabpanel" class="tab-pane fade in active" id="manual">
+					<div class="well">
+						<div id="colpick" data-container="#colpick" data-color="#ef0e0e" data-inline="true" data-format="hex"></div>
 					</div>
-					<div role="tabpanel" class="tab-pane fade" id="programs">lista programów</div>
 				</div>
+				<div role="tabpanel" class="tab-pane fade" id="programs">lista programów</div>
 			</div>
 		</div>
+	</div>
+	<script src="static/luna.js"></script>
 </body>
 </html>

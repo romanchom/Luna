@@ -4,12 +4,14 @@ import tornado.web
 import tornado.websocket
 
 from tornado.options import define, options, parse_command_line
+from lunascript import LunaS
 
 define("port", default=8888, help="run on the given port", type=int)
 
 class IndexHandler(tornado.web.RequestHandler):
 	@tornado.web.asynchronous
 	def get(self):
+		self.render("templates/index.html")
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
 	def check_origin(self, origin):
@@ -20,9 +22,9 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 		self.write_message("Hello World")
 
 	def on_message(self, message):
-		#lunas = LunaS("127.0.0.1", 4243)
+		lunas = LunaS("127.0.0.1", 4243)
+		lunas.send_color(message);
 		self.write_message(message)
-	    #lunas.send_color(message);
 
 	def on_close(self):
 		print "Client disconnected"

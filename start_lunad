@@ -1,2 +1,2 @@
 #!/bin/bash
-(sudo nohup lunad/lunad > lunad.log &)
+(nohup lunad/lunad > lunad.log &)

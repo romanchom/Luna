@@ -59,14 +59,14 @@ main (int argc, char* argv[])
 
     int c;
     static struct option long_options[] = {
-        {"serial", 1, 0, 's'},
-        {"port", 1, 0, 'p'},
-        {"freq", 1, 0, 'f'},
-        {"help", 1, 0, 'h'},
+        {"serial", required_argument, 0, 's'},
+        {"port", required_argument, 0, 'p'},
+        {"freq", required_argument, 0, 'f'},
+        {"help", no_argument, 0, 'h'},
         {NULL, 0, NULL, 0}
     };
     int option_index = 0;
-    while ((c = getopt_long(argc, argv, "spfh",
+    while ((c = getopt_long(argc, argv, "s:p:f:h",
                  long_options, &option_index)) != -1) {
         switch (c) {
         case 'h':
@@ -83,7 +83,7 @@ main (int argc, char* argv[])
             if (optarg) {
                 strncpy(serial, optarg, sizeof serial);
             } else {
-                std::cerr << "Serial port must be given!" << std::endl;
+                std::cerr << "Serial port value must be given!" << std::endl;
                 return 1;
             }
             break;
@@ -95,7 +95,7 @@ main (int argc, char* argv[])
                     return 1;
                 }
             } else {
-                std::cerr << "Port number must be given!" << std::endl;
+                std::cerr << "Port number value must be given!" << std::endl;
                 return 1;
             }
             break;
@@ -107,12 +107,12 @@ main (int argc, char* argv[])
                     return 1;
                 }
             } else {
-                std::cerr << "Port number must be given!" << std::endl;
+                std::cerr << "Frequency value must be given!" << std::endl;
                 return 1;
             }
             break;
         case '?':
-            break;
+            return 1;
         default:
             printf ("?? getopt returned character code 0%o ??\n", c);
         }
