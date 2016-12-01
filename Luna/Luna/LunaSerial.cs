@@ -14,7 +14,7 @@ namespace Luna {
 				port.DataBits = 8;
 				port.DiscardNull = false;
 				port.Open();
-				SendTurnOn();
+				//SendTurnOn();
 			} catch {
 				port.Dispose();
 				throw;
@@ -25,7 +25,7 @@ namespace Luna {
 		
 		public override void Dispose() {
 			if (!isDisposed) {
-				SendTurnOff();
+				//SendTurnOff();
 				port.Dispose();
 				isDisposed = true;
 			}

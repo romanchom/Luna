@@ -1,0 +1,6 @@
+Luna/Luna/publish/
+Luna/Luna/obj/
+Luna/packages/
+Luna/Luna/bin/
+*.suo
+*.db

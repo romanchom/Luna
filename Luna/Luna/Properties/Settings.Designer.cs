@@ -152,5 +152,29 @@ namespace Luna.Properties {
                 this["Scripts"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public float TopPosition {
+            get {
+                return ((float)(this["TopPosition"]));
+            }
+            set {
+                this["TopPosition"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.8")]
+        public float BottomPosition {
+            get {
+                return ((float)(this["BottomPosition"]));
+            }
+            set {
+                this["BottomPosition"] = value;
+            }
+        }
     }
 }
