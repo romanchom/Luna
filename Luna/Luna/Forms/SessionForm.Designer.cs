@@ -60,6 +60,8 @@
             this.AddToListButton = new System.Windows.Forms.Button();
             this.LoadButton = new System.Windows.Forms.Button();
             this.ScriptFileTextBox = new System.Windows.Forms.TextBox();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.spectrumVisualizerControl1 = new Luna.Controls.SpectrumVisualizerControl();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.NotificationIcon = new System.Windows.Forms.NotifyIcon(this.components);
             groupBox1 = new System.Windows.Forms.GroupBox();
@@ -89,6 +91,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.SharpenRadius)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.DepthControl)).BeginInit();
             this.tabPage1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.spectrumVisualizerControl1)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -268,6 +272,7 @@
             this.Tabs.Controls.Add(this.LightingTab);
             this.Tabs.Controls.Add(this.ScreenTab);
             this.Tabs.Controls.Add(this.tabPage1);
+            this.Tabs.Controls.Add(this.tabPage2);
             this.Tabs.Location = new System.Drawing.Point(9, 9);
             this.Tabs.Margin = new System.Windows.Forms.Padding(0);
             this.Tabs.Name = "Tabs";
@@ -574,6 +579,29 @@
             this.ScriptFileTextBox.Size = new System.Drawing.Size(622, 20);
             this.ScriptFileTextBox.TabIndex = 0;
             // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.spectrumVisualizerControl1);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(745, 457);
+            this.tabPage2.TabIndex = 4;
+            this.tabPage2.Text = "Wizualizator";
+            this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // spectrumVisualizerControl1
+            // 
+            this.spectrumVisualizerControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.spectrumVisualizerControl1.Location = new System.Drawing.Point(0, 0);
+            this.spectrumVisualizerControl1.MaximumSize = new System.Drawing.Size(10000, 10000);
+            this.spectrumVisualizerControl1.Name = "spectrumVisualizerControl1";
+            this.spectrumVisualizerControl1.Size = new System.Drawing.Size(745, 457);
+            this.spectrumVisualizerControl1.TabIndex = 0;
+            this.spectrumVisualizerControl1.TabStop = false;
+            // 
             // NotificationIcon
             // 
             this.NotificationIcon.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Info;
@@ -615,6 +643,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.DepthControl)).EndInit();
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
+            this.tabPage2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.spectrumVisualizerControl1)).EndInit();
             this.ResumeLayout(false);
 
 		}
@@ -647,5 +677,7 @@
 		private System.Windows.Forms.Button TestButton;
         private System.Windows.Forms.NumericUpDown bottomPosition;
         private System.Windows.Forms.NumericUpDown topPosition;
+        private System.Windows.Forms.TabPage tabPage2;
+        private Controls.SpectrumVisualizerControl spectrumVisualizerControl1;
     }
 }

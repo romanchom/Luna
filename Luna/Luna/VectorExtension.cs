@@ -17,12 +17,29 @@ namespace Luna {
             v.W = Math.Max(Math.Min(v.W, 255f), 0f);
         }
 
+        public static void Clamp0_1(ref Vector4 v)
+        {
+            v.X = Math.Max(Math.Min(v.X, 1f), 0f);
+            v.Y = Math.Max(Math.Min(v.Y, 1f), 0f);
+            v.Z = Math.Max(Math.Min(v.Z, 1f), 0f);
+        }
+
         public static Vector4 Round(Vector4 value)
         {
             Vector4 ret;
             ret.X = (float) Math.Round(value.X);
             ret.Y = (float) Math.Round(value.Y);
             ret.Z = (float) Math.Round(value.Z);
+            ret.W = 0;
+            return ret;
+        }
+
+        public static Vector4 Abs(Vector4 value)
+        {
+            Vector4 ret;
+            ret.X = (float)Math.Abs(value.X);
+            ret.Y = (float)Math.Abs(value.Y);
+            ret.Z = (float)Math.Abs(value.Z);
             ret.W = 0;
             return ret;
         }

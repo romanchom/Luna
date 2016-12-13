@@ -6,6 +6,7 @@ namespace Luna {
 	public abstract class LunaConnectionBase : IDisposable {
 		public Vector4[] pixelsLeft;
 		public Vector4[] pixelsRight;
+        public Vector4[][] pixels;
 		public float whiteLeft;
 		public float whiteRight;
 
@@ -18,6 +19,7 @@ namespace Luna {
 		public LunaConnectionBase() {
 			pixelsLeft = new Vector4[ledCount];
 			pixelsRight = new Vector4[ledCount];
+            pixels = new Vector4[][] { pixelsLeft, pixelsRight };
 		}
 
         public void SendTurnOn()

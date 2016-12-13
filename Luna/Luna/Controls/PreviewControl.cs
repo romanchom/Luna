@@ -152,35 +152,35 @@ namespace Luna.Controls {
         {
             while (!threadStop)
             {
-                DataStream stream;
-                SharpDX.DXGI.Resource resource1 = screenCapture.AcquireFrame();
-                if ((resource1 == null) && (OnScreenCaptured != null))
+                SharpDX.DXGI.Resource resource = screenCapture.AcquireFrame();
+                if (resource == null && OnScreenCaptured != null)
                 {
                     OnScreenCaptured(null, 0, 0, 0);
+                    continue;
                 }
-                Texture2D source = resource1.QueryInterface<Texture2D>();
-                ResourceRegion? sourceRegion = null;
-                cDev.context.CopySubresourceRegion(source, 0, sourceRegion, mipTexture, 0, 0, 0, 0);
-                source.Dispose();
-                resource1.Dispose();
+                Texture2D original = resource.QueryInterface<Texture2D>();
+                cDev.context.CopySubresourceRegion(original, 0, null, mipTexture, 0, 0, 0, 0);
+                original.Dispose();
+                resource.Dispose();
                 screenCapture.ReleaseFrame();
                 cDev.context.GenerateMips(mipView);
                 float scale = topPosition - bottomPosition;
-                float offset = (topPosition + bottomPosition) - 1f;
+                float offset = topPosition + bottomPosition - 1f;
                 cDev.context.ClearRenderTargetView(intermediateView, Color4.Black);
                 passThroughFilter.Apply(cDev.context, mipView, intermediateView, scale, offset);
                 cDev.context.CopyResource(intermediateTexture, cpuTexture);
-                cDev.context.ClearRenderTargetView(cDev.renderView, (Color4)SharpDX.Color.Black);
+                cDev.context.ClearRenderTargetView(cDev.renderView, Color.Black);
                 passThroughFilter.Apply(cDev.context, mipView, cDev.renderView, 1f, 0f);
                 cDev.Present();
-                DataBox box = cDev.context.MapSubresource(cpuTexture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None, out stream);
-                int count = (box.RowPitch / 0x10) * screenCaptureHeight;
-                System.Numerics.Vector4[] vectorArray = stream.ReadRange<System.Numerics.Vector4>(count);
+                DataStream stream;
+                DataBox dataBox = cDev.context.MapSubresource(cpuTexture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None, out stream);
+                int count = dataBox.RowPitch / 16 * screenCaptureHeight;
+                System.Numerics.Vector4[] pixels = stream.ReadRange<System.Numerics.Vector4>(count);
                 stream.Dispose();
                 cDev.context.UnmapSubresource(cpuTexture, 0);
                 if (OnScreenCaptured != null)
                 {
-                    OnScreenCaptured(vectorArray, screenCaptureWidth, screenCaptureHeight, box.RowPitch / 0x10);
+                    OnScreenCaptured(pixels, screenCaptureWidth, screenCaptureHeight, dataBox.RowPitch / 16);
                 }
             }
         }
@@ -202,7 +202,6 @@ namespace Luna.Controls {
                 threadStop = false;
                 t = new Thread(new ThreadStart(RenderLoop));
                 t.Start();
-                watch.Start();
             }
         }
 

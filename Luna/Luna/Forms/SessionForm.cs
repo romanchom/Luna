@@ -127,13 +127,24 @@ namespace Luna {
 
         private void PreviewControl1_OnScreenCaptured(Vector4[] pixels, int width, int height, int rowStride)
         {
-            Matrix4x4 matrix = new Matrix4x4(
+            /*Matrix4x4 matrix = new Matrix4x4(
                 0.4191028f, 0.4395272f, 0.1033829f, 0f,
                 -0.1699648f, 1.134867f, 0.02449566f, 0f,
                 0.026151f, -0.1052335f, 1.073805f, 0f,
                 0f, 0f, 0f, 1f);
-            matrix = Matrix4x4.Transpose(matrix);
-           
+            matrix = Matrix4x4.Transpose(matrix);*/
+            Matrix4x4 matrix = new Matrix4x4(
+                0.625f, 0.02f, 0.02f, 0f,
+                0.3125f, 0.96f, 0.02f, 0f,
+                0.0625f, 0.02f, 0.96f, 0f,
+                0f, 0f, 0f, 1f);
+
+            if (pixels == null)
+            {
+                luna.SendTurnOn();
+                return;
+            }
+
             Vector4[] pixelsLeft = luna.pixelsLeft;
             Vector4[] pixelsRight = luna.pixelsRight;
             int lunaDepth = Settings.Default.LunaDepth;
@@ -156,9 +167,62 @@ namespace Luna {
                 vector = (Vector4)(vector * (2f / ((float)((1 + lunaDepth) * lunaDepth))));
                 pixelsRight[i] = Vector4.Transform(vector, matrix);
             }
+            //Sharpen(pixelsLeft);
+            //Sharpen(pixelsRight);
             luna.whiteLeft *= 0.97f;
             luna.whiteRight *= 0.97f;
             luna.Send();
+        }
+
+        private static void Sharpen(Vector4[] pixels)
+        {
+            float[] gaussianKernel = new float[]
+            {
+                0.011254f,
+                0.016436f,
+                0.023066f,
+                0.031105f,
+                0.040306f,
+                0.050187f,
+                0.060049f,
+                0.069041f,
+                0.076276f,
+                0.080977f,
+                0.082607f,
+                0.080977f,
+                0.076276f,
+                0.069041f,
+                0.060049f,
+                0.050187f,
+                0.040306f,
+                0.031105f,
+                0.023066f,
+                0.016436f,
+                0.011254f
+            };
+            int length = pixels.Length;
+            Vector4[] edges = new Vector4[length];
+            for(int i = length - 1; i != 0;)
+            {
+                edges[i] = VectorExtension.Abs(pixels[i] - pixels[--i]);
+            }
+
+            Vector4[] edgesBlured = new Vector4[length];
+            for (int i = 0; i < length; ++i)
+            {
+                for(int j = -10; j < 11; ++j)
+                {
+                    if(i + j >= 0 && i + j < length)
+                    {
+                        edgesBlured[i] += edges[i + j] * gaussianKernel[j + 10];
+                    }
+                }
+            }
+
+            for (int i = 0; i < length; ++i)
+            {
+                pixels[i] -= edgesBlured[i] * 5.0f;
+            }
         }
 
         private void RedSlider_ValueChanged(object sender, EventArgs e)
@@ -220,6 +284,10 @@ namespace Luna {
                 case 3:
                     script.Stop();
                     break;
+
+                case 4:
+                    script.Stop();
+                    break;
             }
             previousTabIndex = index;
             switch (previousTabIndex)
@@ -227,16 +295,22 @@ namespace Luna {
                 case 0:
                     script = new SettingsScript();
                     script.Start(luna);
-                    return;
+                    break;
 
                 case 1:
                     script = new LightScript();
                     script.Start(luna);
-                    return;
+                    break;
 
                 case 2:
                     previewControl1.StartRenderLoop();
-                    return;
+                    break;
+
+                case 4:
+                    script = new SoundScript();
+                    (script as SoundScript).spectrumViz = spectrumVisualizerControl1;
+                    script.Start(luna);
+                    break;
             }
         }
 

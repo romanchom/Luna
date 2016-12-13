@@ -14,8 +14,9 @@ namespace Luna {
 			get { return 16; }
 		}
 		public abstract void Run();
-		
-		private Thread thread;
+        public virtual void Exit() { }
+
+        private Thread thread;
 
 		public void Start(LunaConnectionBase luna) {
 			if (thread == null) {
@@ -48,6 +49,7 @@ namespace Luna {
 				luna.Send();
 				if(period > 0) Thread.Sleep(period);
 			}
+            Exit();
 		}
 
 		public static LunaScript CompileScript(string fileName) {
