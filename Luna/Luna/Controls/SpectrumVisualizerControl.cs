@@ -14,6 +14,7 @@ namespace Luna.Controls
     {
         private PointF[] points = new PointF[1];
 
+
         public float[] amplitudes
         {
             set
@@ -21,8 +22,12 @@ namespace Luna.Controls
                 var p = new PointF[value.Length];
                 for(int i = 0; i < value.Length; ++i)
                 {
+                    double pos = value[i];
+                    if (!(pos > 0)) pos = 0;
+                    else if (pos > 1) pos = 1;
+                    pos = (1 - pos) * Size.Height;
                     p[i].X = (float) i * Size.Width / value.Length;
-                    p[i].Y = (1 - value[i]) * Size.Height;
+                    p[i].Y = (float) pos;
                 }
                 points = p;
                 this.Invalidate();

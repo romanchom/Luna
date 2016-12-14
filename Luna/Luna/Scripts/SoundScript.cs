@@ -6,167 +6,210 @@ using System.Linq;
 using System;
 using System.Numerics;
 using Luna.Controls;
+using System.Runtime.InteropServices;
 
 namespace Luna
 {
     class SoundScript : LunaScript
     {
-        WasapiCapture soundInput;
-        float[] buffer;
+        protected override int period => 10;
+
+        private const int windowSizePot = 13;
+        private const int windowSize = 1 << windowSizePot;
+        private const int samplingRate = 48000;
+        private const int channelCount = 2;
+        private float lowFrequency = 100;
+        private float highFrequency = 6400;
+
+        AudioClient audioClient;
+        AudioCaptureClient capClient;
+
+        float[] recordBuffer;
+        int recordBufferPtr;
+
+        float[] windowFunction;
+
         NAudio.Dsp.Complex[] fftBuffer;
-        float[] fftResult;
-        float[] fftResultCopy;
-        float[] tempPixelArray0;
-        float[] tempPixelArray1;
-        Vector4[] hues;
-        int[] indicies;
-        int dstBufferPos;
-        const int windowSizePot = 12;
-        const int windowSize = 1 << windowSizePot;
-        const int samplingRate = 48000;
-        const int channelCount = 2;
-        const float startFrequency = 100;
-        const float endFrequency = 10000;
+
+        float[,] fftResult;
+        float[,] frequencyBins;
+
+        Vector4[] baseColors = new Vector4[LunaConnectionBase.ledCount];
+        float[,] pixelIntensities = new float[2, LunaConnectionBase.ledCount];
 
         public SpectrumVisualizerControl spectrumViz;
 
-        public SoundScript ()
+        public override void Run()
         {
-            buffer = new float[windowSize * 2]; // 2 channels
-            fftBuffer = new NAudio.Dsp.Complex[windowSize];
-            fftResult = new float[windowSize]; // 2 channels
-            fftResultCopy = new float[windowSize];
-            hues = new Vector4[LunaConnectionBase.ledCount];
-            indicies = new int[LunaConnectionBase.ledCount + 1];
-            tempPixelArray0 = new float[LunaConnectionBase.ledCount];
-            tempPixelArray1 = new float[LunaConnectionBase.ledCount];
-
-            for (int i = 0; i < LunaConnectionBase.ledCount; ++i)
+            ReadNextPacket();
+            FFT();
+            for(int c = 0; c < 2; ++c)
             {
-                float frequency = (float)Math.Pow(endFrequency / startFrequency, (double)i / (double)LunaConnectionBase.ledCount) * startFrequency;
-                indicies[i + 1] = (int)Math.Floor(frequency / samplingRate * windowSize);
-                float tone = (float)(Math.Log(frequency) / Math.Log(2));
-                hues[i] = hueToRGB(tone % 1) * (float)Math.Log(tone);
-            }
-            indicies[0] = 0;
-
-            dstBufferPos = 0;
-
-            var enumerator = new MMDeviceEnumerator();
-            var captureDevices = enumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.Active).ToArray();
-            soundInput = new WasapiCapture(captureDevices[0], true);
-
-            soundInput.ShareMode = AudioClientShareMode.Shared;
-            soundInput.WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(samplingRate, channelCount);
-            soundInput.DataAvailable += CaptureOnDataAvailable;
-            soundInput.StartRecording();
-        }
-
-        private void CaptureOnDataAvailable(object sender, WaveInEventArgs waveInEventArgs)
-        {
-            int srcBufferPos = 0;
-            int srcBytesCount = waveInEventArgs.BytesRecorded;
-            while (true)
-            {
-                int count =  Math.Min(windowSize * 2, dstBufferPos + srcBytesCount) - dstBufferPos;
-                Buffer.BlockCopy(waveInEventArgs.Buffer, srcBufferPos, buffer, dstBufferPos, count);
-
-                dstBufferPos += count;
-                srcBufferPos += count;
-                srcBytesCount -= count;
-
-                if (dstBufferPos == windowSize * 2)
+                for(int i = 0; i < LunaConnectionBase.ledCount; ++i)
                 {
-                    FFT();
-                    dstBufferPos = 0;
-                }else
-                {
-                    break;
+                    pixelIntensities[c, i] = Math.Max(0, Math.Max(pixelIntensities[c, i] - 0.02f, frequencyBins[c, i] + 1));
+                    luna.pixels[c][i] = baseColors[i] * (float) Math.Pow(pixelIntensities[c, i], 2.2f) * 2;
                 }
             }
         }
 
-        float totalPower = 0;
-        float lastPower = 0;
-        float avgPower = 0;
-        bool beat = false;
+        public override void Exit()
+        {
+            capClient.Dispose();
+            capClient = null;
+
+            audioClient.Stop();
+            audioClient.Dispose();
+            audioClient = null;
+        }
+
+        public SoundScript ()
+        {
+            windowFunction = new float[windowSize];
+            for(int i = 0; i < windowSize; ++i) {
+                windowFunction[i] = (float) FastFourierTransform.HannWindow(i, windowSize);
+            }
+
+            fftBuffer = new NAudio.Dsp.Complex[windowSize];
+
+            fftResult = new float[channelCount, windowSize];
+
+            frequencyBins = new float[channelCount, LunaConnectionBase.ledCount];
+
+            float octaveCount = (float)(Math.Log(highFrequency / lowFrequency) / Math.Log(2));
+            float step = octaveCount / LunaConnectionBase.ledCount;
+            for(int i = 0; i < LunaConnectionBase.ledCount; ++i)
+            {
+                baseColors[i] = hueToRGB(1 - (step * i) % 1);
+            }
+
+            InitializeAudioClient();
+        }
+        
+        private void InitializeAudioClient()
+        {
+            var enumerator = new MMDeviceEnumerator();
+            var captureDevice = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+            audioClient = captureDevice.AudioClient;
+
+            int recordBufferLength = samplingRate; // 20ms worth of recording
+            recordBuffer = new float[recordBufferLength * channelCount];
+
+            long requestedDuration = 10000 * period * 2;
+
+            audioClient.Initialize(AudioClientShareMode.Shared,
+                AudioClientStreamFlags.Loopback,
+                requestedDuration,
+                0,
+                WaveFormat.CreateIeeeFloatWaveFormat(samplingRate, channelCount),
+                Guid.Empty);
+
+            capClient = audioClient.AudioCaptureClient;
+            audioClient.Start();
+        } 
+
+        private void ReadNextPacket()
+        {
+            int packetSize = capClient.GetNextPacketSize();
+
+            while (packetSize != 0)
+            {
+                int framesAvailable;
+                AudioClientBufferFlags flags;
+                IntPtr srcBuffer = capClient.GetBuffer(out framesAvailable, out flags);
+
+                while (true)
+                {
+                    int sampleCount = Math.Min(recordBuffer.Length, recordBufferPtr + framesAvailable * channelCount) - recordBufferPtr;
+                    Marshal.Copy(srcBuffer, recordBuffer, recordBufferPtr, sampleCount);
+
+                    recordBufferPtr += sampleCount;
+                    if(recordBufferPtr == recordBuffer.Length)
+                    {
+                        recordBufferPtr = 0;
+                    }else
+                    {
+                        break;
+                    }
+                }
+
+                capClient.ReleaseBuffer(framesAvailable);
+                packetSize = capClient.GetNextPacketSize();
+            }
+        }
+        
         private void FFT()
         {
             Console.WriteLine("FT");
-            lastPower = totalPower;
-            totalPower = 0;
+            fftMax = -3;
             FFTChannel(0);
             FFTChannel(1);
 
-            for (int c = 0; c < channelCount; ++c)
+            Aggregate();
+            if (spectrumViz != null)
             {
+                int c = LunaConnectionBase.ledCount;
+                float[] amp = new float[c];
                 for (int i = 0; i < LunaConnectionBase.ledCount; ++i)
                 {
-                    float sum = 0;
-                    int lo = indicies[i];
-                    int hi = indicies[i + 1];
-                    for (int j = lo; j < hi; ++j)
-                    {
-                        sum += fftResult[j * channelCount + 1];
-                    }
-                    totalPower -= sum;
-                    sum /= hi - lo;
-                    tempPixelArray0[i] = sum;
-                    if (hi - lo == 0) tempPixelArray0[i] = -100;
-                }
-                for (int i = 0; i < LunaConnectionBase.ledCount; ++i)
-                {
-                    const float lerp = 0.3f;
-                    const int radius = 40;
-                    int lo = Math.Max(0, i - radius);
-                    int hi = Math.Min(LunaConnectionBase.ledCount - 1, i + radius);
-                    float max = -4f;
-                    for (int j = lo; j <= hi; ++j)
-                    {
-                        max = Math.Max(tempPixelArray0[j], max);
-                    }
-                    float value = (tempPixelArray0[i] - max) * 10 + 1;
-                    value = Math.Max(0, value);
-                    value = Math.Min(1, value);
-                    value = (float)Math.Pow(value, 2.2);
-
-                    pixels[c, i] = Math.Max(pixels[c, i] - 1.0f / 60.0f, value);
-                }
-            }
-
-            if(spectrumViz != null)
-            {
-                float[] amp = new float[windowSize / 2];
-                for (int i = 0; i < windowSize / 2; ++i)
-                {
-                    amp[i] = fftResult[i * 2];
+                    amp[i] = frequencyBins[0, i]+ 0.9f;
                 }
                 spectrumViz.amplitudes = amp;
             }
+
+            fftGain = fftGain * 0.98f + fftMax * 0.02f;
         }
 
+        private double fftGain;
+        private double fftMax;
         private void FFTChannel(int channel)
         {
+            int offset = recordBufferPtr - windowSize * 2 + channel + recordBuffer.Length;
             for (int i = 0; i < windowSize; ++i)
             {
-                fftBuffer[i].X = (float)(buffer[i * channelCount + channel] * FastFourierTransform.HammingWindow(i, windowSize));
+                int index = (offset + i * channelCount + channel) % recordBuffer.Length;
+                fftBuffer[i].X = recordBuffer[index] * windowFunction[i];
                 fftBuffer[i].Y = 0;
             }
             FastFourierTransform.FFT(true, windowSizePot, fftBuffer);
-
-            double gain = -5;
-            float scale = 1;
+            
             for (int i = 0; i < windowSize / 2; ++i)
             {
-                double value = (float)Math.Sqrt(fftBuffer[i].X * fftBuffer[i].X + fftBuffer[i].Y * fftBuffer[i].Y);
-                value *= 30;
-                //value = Math.Log10(value);
-                //gain = Math.Max(value, gain);
-                fftResult[i * channelCount + channel] = (float) value;
+                double value = Math.Sqrt(fftBuffer[i].X * fftBuffer[i].X + fftBuffer[i].Y * fftBuffer[i].Y);
+                value = Math.Log10(value);
+                fftMax = Math.Max(fftMax, value);
+                fftResult[channel, i] = (float) value;
             }
+
             for (int i = 0; i < windowSize / 2; ++i)
             {
-                //fftResult[i * channelCount + channel] = (fftResult[i * channelCount + channel] - (float) gain) * scale;
+                fftResult[channel, i] = (float)((fftResult[channel, i] - fftGain));
+            }
+        }
+
+        void Aggregate()
+        {
+            float octaveCount = (float) (Math.Log(highFrequency / lowFrequency) / Math.Log(2));
+            float step = octaveCount / LunaConnectionBase.ledCount;
+            for (int channel = 0; channel < channelCount; ++channel)
+            {
+                float f0 = lowFrequency;
+                int jl = 1;
+                for (int i = 0; i < LunaConnectionBase.ledCount; ++i)
+                {
+                    float f1 = lowFrequency * (float)Math.Pow(2, step * (i + 1));
+                    int jh = (int)(f1 * windowSize / samplingRate);
+
+                    float max = -10;
+                    for (int j = jl; j <= jh; ++j)
+                    {
+                        max = Math.Max(max, fftResult[channel, j]);
+                    }
+                    frequencyBins[channel, i] = max;
+
+                    f0 = f1;
+                    jl = jh;
+                }
             }
         }
 
@@ -182,25 +225,6 @@ namespace Luna
             VectorExtension.Clamp0_1(ref ret);
             return ret;
         }
-
-        float[,] pixels = new float[2, LunaConnectionBase.ledCount];
-        public override void Run()
-        {
-            float white = beat ? 0.1f : 0.0f;
-            luna.whiteLeft = white;
-            luna.whiteRight = white;
-            for(int c = 0; c < channelCount; ++c)
-            {
-                for (int i = 0; i < LunaConnectionBase.ledCount; ++i)
-                {
-                    luna.pixels[c][i] = hues[i] * 0;
-                }
-            }
-        }
-
-        public override void Exit()
-        {
-            soundInput.StopRecording();
-        }
+        
     }
 }

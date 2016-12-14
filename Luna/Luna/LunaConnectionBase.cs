@@ -60,8 +60,8 @@ namespace Luna {
                 pixel *= multiplier;
                 pixel += error;
                 Vector4 value = VectorExtension.Round(pixel);
-                error = pixel - value;
                 VectorExtension.Clamp0_255(ref value);
+                error = pixel - value;
                 dataBuffer[index++] = (byte)value.X;
                 dataBuffer[index++] = (byte)value.Y;
                 dataBuffer[index++] = (byte)value.Z;
@@ -73,8 +73,8 @@ namespace Luna {
                 pixel *= multiplier;
                 pixel += error;
                 Vector4 value = VectorExtension.Round(pixel);
-                error = pixel - value;
                 VectorExtension.Clamp0_255(ref value);
+                error = pixel - value;
                 dataBuffer[index++] = (byte)value.X;
                 dataBuffer[index++] = (byte)value.Y;
                 dataBuffer[index++] = (byte)value.Z;
