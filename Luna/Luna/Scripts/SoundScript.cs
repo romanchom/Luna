@@ -156,12 +156,15 @@ namespace Luna
                 }
                 spectrumViz.amplitudes = amp;
             }
-
-            fftGain = fftGain * 0.98f + fftMax * 0.02f;
+            fftAvg.Add(fftMax);
+            fftGain = -1.5;// fftGain * 0.95f + fftAvg.Value * 0.05f;
         }
 
         private double fftGain;
         private double fftMax;
+        TimeAverage fftAvg = new TimeAverage(100);
+
+
         private void FFTChannel(int channel)
         {
             int offset = recordBufferPtr - windowSize * 2 + channel + recordBuffer.Length;

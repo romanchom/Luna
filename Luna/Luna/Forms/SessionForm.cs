@@ -125,20 +125,10 @@ namespace Luna {
             }
         }
 
+        Matrix4x4 colorCorrect = ColorSpace.sRGB.FromTo(ColorSpace.ws2812);
+
         private void PreviewControl1_OnScreenCaptured(Vector4[] pixels, int width, int height, int rowStride)
         {
-            /*Matrix4x4 matrix = new Matrix4x4(
-                0.4191028f, 0.4395272f, 0.1033829f, 0f,
-                -0.1699648f, 1.134867f, 0.02449566f, 0f,
-                0.026151f, -0.1052335f, 1.073805f, 0f,
-                0f, 0f, 0f, 1f);
-            matrix = Matrix4x4.Transpose(matrix);*/
-            Matrix4x4 matrix = new Matrix4x4(
-                0.625f, 0.02f, 0.02f, 0f,
-                0.3125f, 0.96f, 0.02f, 0f,
-                0.0625f, 0.02f, 0.96f, 0f,
-                0f, 0f, 0f, 1f);
-
             if (pixels == null)
             {
                 luna.SendTurnOn();
@@ -157,7 +147,8 @@ namespace Luna {
                     vector += (Vector4)((lunaDepth - j) * pixels[num3 + j]);
                 }
                 vector = (Vector4)(vector * (2f / ((float)((1 + lunaDepth) * lunaDepth))));
-                pixelsLeft[i] = Vector4.Transform(vector, matrix);
+                pixelsLeft[i] = Vector4.Transform(vector, colorCorrect);
+
                 vector = new Vector4();
                 num3 += width - 1;
                 for (int k = 0; k < lunaDepth; k++)
@@ -165,10 +156,9 @@ namespace Luna {
                     vector += (Vector4)((lunaDepth - k) * pixels[num3 - k]);
                 }
                 vector = (Vector4)(vector * (2f / ((float)((1 + lunaDepth) * lunaDepth))));
-                pixelsRight[i] = Vector4.Transform(vector, matrix);
+                pixelsRight[i] = Vector4.Transform(vector, colorCorrect);
             }
-            //Sharpen(pixelsLeft);
-            //Sharpen(pixelsRight);
+
             luna.whiteLeft *= 0.97f;
             luna.whiteRight *= 0.97f;
             luna.Send();
@@ -288,6 +278,10 @@ namespace Luna {
                 case 4:
                     script.Stop();
                     break;
+
+                case 5:
+                    script.Stop();
+                    break;
             }
             previousTabIndex = index;
             switch (previousTabIndex)
@@ -309,6 +303,11 @@ namespace Luna {
                 case 4:
                     script = new SoundScript();
                     (script as SoundScript).spectrumViz = spectrumVisualizerControl1;
+                    script.Start(luna);
+                    break;
+
+                case 5:
+                    script = new FlameScript();
                     script.Start(luna);
                     break;
             }

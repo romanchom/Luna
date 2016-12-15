@@ -38,16 +38,15 @@ namespace Luna {
 
 		private void ThreadFunction() {
 			System.Diagnostics.Stopwatch st = new System.Diagnostics.Stopwatch();
-			double time = 0;
 			st.Start();
 			while (shouldRun) {
-				double t = st.Elapsed.TotalSeconds;
-				System.Console.WriteLine(1 / (t - time));
-				time = t;
+				double t0 = st.Elapsed.TotalMilliseconds;
+				//System.Console.WriteLine(1 / (t - time));
 				Run();
-				//luna.SendTurnOn();
 				luna.Send();
-				if(period > 0) Thread.Sleep(period);
+                double t1 = st.Elapsed.TotalMilliseconds;
+                double sleepTime = period - (t1 - t0);
+                if (sleepTime > 0) Thread.Sleep((int) Math.Round(sleepTime));
 			}
             Exit();
 		}

@@ -25,7 +25,7 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <AutorunEnabled>true</AutorunEnabled>
-    <ApplicationRevision>1</ApplicationRevision>
+    <ApplicationRevision>3</ApplicationRevision>
     <ApplicationVersion>1.1.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -116,6 +116,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ColorSpace.cs" />
     <Compile Include="Controls\SpectrumVisualizerControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -148,6 +149,7 @@
     <Compile Include="LunaConnectionBase.cs" />
     <Compile Include="LunaTcp.cs" />
     <Compile Include="LunaUdp.cs" />
+    <Compile Include="Scripts\FlameScript.cs" />
     <Compile Include="Scripts\LightScript.cs" />
     <Compile Include="LunaSerial.cs" />
     <Compile Include="Scripts\LunaScript.cs" />
@@ -169,6 +171,7 @@
       <DependentUpon>SharpDXTest.cs</DependentUpon>
     </Compile>
     <Compile Include="VectorExtension.cs" />
+    <Compile Include="TimeAverage.cs" />
     <EmbeddedResource Include="Controls\PreviewControl.resx">
       <DependentUpon>PreviewControl.cs</DependentUpon>
     </EmbeddedResource>

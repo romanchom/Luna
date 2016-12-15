@@ -64,6 +64,7 @@
             this.spectrumVisualizerControl1 = new Luna.Controls.SpectrumVisualizerControl();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.NotificationIcon = new System.Windows.Forms.NotifyIcon(this.components);
+            this.Kominek = new System.Windows.Forms.TabPage();
             groupBox1 = new System.Windows.Forms.GroupBox();
             label5 = new System.Windows.Forms.Label();
             label4 = new System.Windows.Forms.Label();
@@ -273,6 +274,7 @@
             this.Tabs.Controls.Add(this.ScreenTab);
             this.Tabs.Controls.Add(this.tabPage1);
             this.Tabs.Controls.Add(this.tabPage2);
+            this.Tabs.Controls.Add(this.Kominek);
             this.Tabs.Location = new System.Drawing.Point(9, 9);
             this.Tabs.Margin = new System.Windows.Forms.Padding(0);
             this.Tabs.Name = "Tabs";
@@ -612,6 +614,16 @@
             this.NotificationIcon.Visible = true;
             this.NotificationIcon.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.NotificationIcon_MouseDoubleClick);
             // 
+            // Kominek
+            // 
+            this.Kominek.Location = new System.Drawing.Point(4, 22);
+            this.Kominek.Name = "Kominek";
+            this.Kominek.Padding = new System.Windows.Forms.Padding(3);
+            this.Kominek.Size = new System.Drawing.Size(745, 457);
+            this.Kominek.TabIndex = 5;
+            this.Kominek.Text = "Kominek";
+            this.Kominek.UseVisualStyleBackColor = true;
+            // 
             // SessionForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -679,5 +691,6 @@
         private System.Windows.Forms.NumericUpDown topPosition;
         private System.Windows.Forms.TabPage tabPage2;
         private Controls.SpectrumVisualizerControl spectrumVisualizerControl1;
+        private System.Windows.Forms.TabPage Kominek;
     }
 }
