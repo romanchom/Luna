@@ -25,7 +25,7 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <AutorunEnabled>true</AutorunEnabled>
-    <ApplicationRevision>3</ApplicationRevision>
+    <ApplicationRevision>8</ApplicationRevision>
     <ApplicationVersion>1.1.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -149,6 +149,7 @@
     <Compile Include="LunaConnectionBase.cs" />
     <Compile Include="LunaTcp.cs" />
     <Compile Include="LunaUdp.cs" />
+    <Compile Include="Perlin3D.cs" />
     <Compile Include="Scripts\FlameScript.cs" />
     <Compile Include="Scripts\LightScript.cs" />
     <Compile Include="LunaSerial.cs" />
@@ -161,6 +162,7 @@
     <Compile Include="Forms\SessionForm.Designer.cs">
       <DependentUpon>SessionForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Scripts\PlasmaScript.cs" />
     <Compile Include="Scripts\SoundScript.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Scripts\SettingsScript.cs" />

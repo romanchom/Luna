@@ -282,6 +282,10 @@ namespace Luna {
                 case 5:
                     script.Stop();
                     break;
+
+                case 6:
+                    script.Stop();
+                    break;
             }
             previousTabIndex = index;
             switch (previousTabIndex)
@@ -308,6 +312,11 @@ namespace Luna {
 
                 case 5:
                     script = new FlameScript();
+                    script.Start(luna);
+                    break;
+
+                case 6:
+                    script = new PlasmaScript();
                     script.Start(luna);
                     break;
             }

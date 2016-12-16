@@ -9,10 +9,10 @@ namespace Luna
     {
         protected override int period => 10;
         private float[,] temperatures = new float[2, LunaConnectionBase.ledCount];
+        private int position = 0;
         private Random random = new Random();
 
-        private float sourceTemperature = 0;
-        private float sourceBurnRate = 1.0f;
+        private float[] sourceBurnRates = new float[2];
         private float sourceTemperatureLow = 1000;
         private float sourceTemperatureHigh = 3700;
         private float sourceChangeSpeed = 0.2f;
@@ -24,27 +24,26 @@ namespace Luna
             float coolRate = sourceTemperatureHigh / LunaConnectionBase.ledCount;
             for(int c = 0; c < 2; ++c)
             {
-                for(int i = LunaConnectionBase.ledCount - 1; i > 0; --i)
+                for(int i = 0; i < LunaConnectionBase.ledCount; ++i)
                 {
-                    temperatures[c, i] = temperatures[c, i - 1] - coolRate; 
+                    temperatures[c, i] -= coolRate; 
                 }
 
-                sourceBurnRate += (float)(random.NextDouble() * 2 - 1) * sourceChangeSpeed;
-                sourceBurnRate = (sourceBurnRate - 1) * (1 - sourceChangeSpeed) + 1.0f;
-
-                sourceTemperature = sourceBurnRate * (sourceTemperatureHigh - sourceTemperatureLow) + sourceTemperatureLow;
-
-                temperatures[c, 0] = sourceTemperature;
+                sourceBurnRates[c] += (float)(random.NextDouble() * 2 - 1) * sourceChangeSpeed;
+                sourceBurnRates[c] = (sourceBurnRates[c] - 1) * (1 - sourceChangeSpeed) + 1.0f;
+               
+                temperatures[c, position] = sourceBurnRates[c] * (sourceTemperatureHigh - sourceTemperatureLow) + sourceTemperatureLow;
 
                 for (int i = 0; i < LunaConnectionBase.ledCount; ++i)
                 {
-                    float t = temperatures[c, i];
+                    float t = temperatures[c, (i + position) % LunaConnectionBase.ledCount];
                     luna.pixels[c][i] = temperatureToRGB(t) * Math.Min(1.0f, i * 0.1f);
                 }
             }
+            position = (position + (LunaConnectionBase.ledCount - 1)) % LunaConnectionBase.ledCount;
         }
         
-        private Matrix4x4 colorSpaceTransform = ColorSpace.sRGB.FromXYZToRGB;
+        private Matrix4x4 colorSpaceTransform = ColorSpace.ws2812.FromXYZToRGB;
         private Vector4 temperatureToRGB(float t)
         {
             // SCIENCE BITCH!!
@@ -93,7 +92,7 @@ namespace Luna
             }
 
             float z = 1 - x - y;
-            float energyMultiplier = Math.Max(0, (t - 1200)) * brightness / sourceTemperatureHigh;
+            float energyMultiplier = Math.Max(0, (t - 1100)) * brightness / sourceTemperatureHigh;
             return Vector4.Transform(new Vector4(x, y, z, 0) * (energyMultiplier / y), colorSpaceTransform);
         }
     }

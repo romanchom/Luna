@@ -62,9 +62,10 @@
             this.ScriptFileTextBox = new System.Windows.Forms.TextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.spectrumVisualizerControl1 = new Luna.Controls.SpectrumVisualizerControl();
+            this.Kominek = new System.Windows.Forms.TabPage();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.NotificationIcon = new System.Windows.Forms.NotifyIcon(this.components);
-            this.Kominek = new System.Windows.Forms.TabPage();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
             groupBox1 = new System.Windows.Forms.GroupBox();
             label5 = new System.Windows.Forms.Label();
             label4 = new System.Windows.Forms.Label();
@@ -275,6 +276,7 @@
             this.Tabs.Controls.Add(this.tabPage1);
             this.Tabs.Controls.Add(this.tabPage2);
             this.Tabs.Controls.Add(this.Kominek);
+            this.Tabs.Controls.Add(this.tabPage3);
             this.Tabs.Location = new System.Drawing.Point(9, 9);
             this.Tabs.Margin = new System.Windows.Forms.Padding(0);
             this.Tabs.Name = "Tabs";
@@ -604,6 +606,16 @@
             this.spectrumVisualizerControl1.TabIndex = 0;
             this.spectrumVisualizerControl1.TabStop = false;
             // 
+            // Kominek
+            // 
+            this.Kominek.Location = new System.Drawing.Point(4, 22);
+            this.Kominek.Name = "Kominek";
+            this.Kominek.Padding = new System.Windows.Forms.Padding(3);
+            this.Kominek.Size = new System.Drawing.Size(745, 457);
+            this.Kominek.TabIndex = 5;
+            this.Kominek.Text = "Kominek";
+            this.Kominek.UseVisualStyleBackColor = true;
+            // 
             // NotificationIcon
             // 
             this.NotificationIcon.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Info;
@@ -614,15 +626,15 @@
             this.NotificationIcon.Visible = true;
             this.NotificationIcon.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.NotificationIcon_MouseDoubleClick);
             // 
-            // Kominek
+            // tabPage3
             // 
-            this.Kominek.Location = new System.Drawing.Point(4, 22);
-            this.Kominek.Name = "Kominek";
-            this.Kominek.Padding = new System.Windows.Forms.Padding(3);
-            this.Kominek.Size = new System.Drawing.Size(745, 457);
-            this.Kominek.TabIndex = 5;
-            this.Kominek.Text = "Kominek";
-            this.Kominek.UseVisualStyleBackColor = true;
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage3.Size = new System.Drawing.Size(745, 457);
+            this.tabPage3.TabIndex = 6;
+            this.tabPage3.Text = "Plazma";
+            this.tabPage3.UseVisualStyleBackColor = true;
             // 
             // SessionForm
             // 
@@ -692,5 +704,6 @@
         private System.Windows.Forms.TabPage tabPage2;
         private Controls.SpectrumVisualizerControl spectrumVisualizerControl1;
         private System.Windows.Forms.TabPage Kominek;
+        private System.Windows.Forms.TabPage tabPage3;
     }
 }
