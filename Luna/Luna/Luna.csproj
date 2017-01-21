@@ -116,7 +116,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ColorSpace.cs" />
+    <Compile Include="Audio\AudioCapture.cs" />
+    <Compile Include="Audio\RainbowPerOctave.cs" />
+    <Compile Include="Audio\ToneAggregator.cs" />
+    <Compile Include="Audio\FFTProcessor.cs" />
+    <Compile Include="Utility\CircularBuffer.cs" />
+    <Compile Include="Utility\ColorSpace.cs" />
     <Compile Include="Controls\SpectrumVisualizerControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -149,7 +154,8 @@
     <Compile Include="LunaConnectionBase.cs" />
     <Compile Include="LunaTcp.cs" />
     <Compile Include="LunaUdp.cs" />
-    <Compile Include="Perlin3D.cs" />
+    <Compile Include="Audio\HoldFilter.cs" />
+    <Compile Include="Utility\Perlin3D.cs" />
     <Compile Include="Scripts\FlameScript.cs" />
     <Compile Include="Scripts\LightScript.cs" />
     <Compile Include="LunaSerial.cs" />
@@ -172,8 +178,8 @@
     <Compile Include="Forms\SharpDXTest.Designer.cs">
       <DependentUpon>SharpDXTest.cs</DependentUpon>
     </Compile>
-    <Compile Include="VectorExtension.cs" />
-    <Compile Include="TimeAverage.cs" />
+    <Compile Include="Utility\VectorExtension.cs" />
+    <Compile Include="Utility\MovingAverage.cs" />
     <EmbeddedResource Include="Controls\PreviewControl.resx">
       <DependentUpon>PreviewControl.cs</DependentUpon>
     </EmbeddedResource>
@@ -190,8 +196,6 @@
     <EmbeddedResource Include="Forms\SessionForm.resx">
       <DependentUpon>SessionForm.cs</DependentUpon>
     </EmbeddedResource>
-    <None Include="ClassDiagram1.cd" />
-    <None Include="Luna_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
