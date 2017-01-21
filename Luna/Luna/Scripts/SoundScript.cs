@@ -50,7 +50,7 @@ namespace Luna
 
 			if (beatDetector.HasBeat) beatIntensity = 1.0f;
 
-			beatIntensity = Math.Max(0.0f, beatIntensity - 0.04f);
+			beatIntensity = Math.Max(0.0f, beatIntensity - beatDetector.BPS / 100.0f);
 			
 			for (int c = 0; c < 2; ++c)
 			{

@@ -28,7 +28,7 @@ namespace Luna.Audio
 
 		private float lastPhase = 0;
 		private int periodsSinceBeat;
-		public float BPM { get; private set; }
+		public float BPS { get; private set; }
 		public bool HasBeat	{ get; private set; }
 
 		public BeatDetector(int sampligRate, int bandCount, int length)
@@ -98,9 +98,9 @@ namespace Luna.Audio
 				if (Math.Abs(phase) < 3.14f * 0.5f && phase * lastPhase < 0)
 				{
 					HasBeat = true;
-					BPM = 60.0f / (periodsSinceBeat * period);
+					BPS = 1.0f / (periodsSinceBeat * period);
 					periodsSinceBeat = 0;
-					Console.WriteLine(BPM);
+					Console.WriteLine(BPS);
 					FindBeat();
 				}
 				else
