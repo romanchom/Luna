@@ -42,21 +42,27 @@ namespace Luna
 				aggregator.Aggregate(processor.Magnitudes, -6);
 				beatDetector.AddInput(aggregator.Tones);
 				holdFilters[c].Process(aggregator.Tones, 0.02f, 1);
-				for (int i = 0; i < LunaConnectionBase.ledCount; ++i)
-                {
-					luna.pixels[c][i] = colors.Colors[i] * (float) Math.Pow(holdFilters[c].Values[i], 2.2f) * 2;
-                }
             }
 
 			beatDetector.Analyze();
 
 			beatDetector.Visualize(spectrumViz);
 
-			if (beatDetector.HasBeat) beatIntensity = 0.1f;
+			if (beatDetector.HasBeat) beatIntensity = 1.0f;
 
-			beatIntensity = Math.Max(0, beatIntensity - 0.01f);
+			beatIntensity = Math.Max(0.0f, beatIntensity - 0.04f);
 
-			luna.whiteLeft = luna.whiteRight = beatIntensity;
+			float colorBoost = 1.0f + beatIntensity * 4.0f;
+
+			for (int c = 0; c < 2; ++c)
+			{
+				for (int i = 0; i < LunaConnectionBase.ledCount; ++i)
+				{
+					luna.pixels[c][i] = colorBoost * (float)Math.Pow(holdFilters[c].Values[i], 2.2f) * 2 * colors.Colors[i];
+				}
+			}
+
+			luna.whiteLeft = luna.whiteRight = beatIntensity * 0.05f;
         }
 
         public override void Exit()
@@ -76,7 +82,7 @@ namespace Luna
 			for(int c = 0; c < channelCount; ++c){
 				holdFilters[c] = new HoldFilter(count);
 			}
-			beatDetector = new BeatDetector(count, 100);
+			beatDetector = new BeatDetector(100, count, 100);
 		}
         
     }
