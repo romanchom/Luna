@@ -26,10 +26,8 @@ namespace Luna
 		ToneAggregator aggregator;
 		RainbowPerOctave colors;
 		HoldFilter[] holdFilters;
-
-		Utility.CircularBuffer<float> powerBuffer;
-		FFTProcessor powerProcessor;
-		MovingAverage[] averages;
+		BeatDetector beatDetector;
+		float beatIntensity = 0;
 
         public SpectrumVisualizerControl spectrumViz;
 
@@ -37,15 +35,12 @@ namespace Luna
         {
 			float[] powers = new float[120];
 			capture.ReadPackets();
+			beatDetector.Reset();
 			for (int c = 0; c < 2; ++c)
 			{
 				processor.Process(capture.Channels[c]);
-				aggregator.Aggregate(processor.Bins, -6);
-				for(int i = 0; i < 120; ++i)
-				{
-					averages[i].Add(aggregator.Tones[i]);
-					powers[i] += aggregator.Tones[i];
-				}
+				aggregator.Aggregate(processor.Magnitudes, -6);
+				beatDetector.AddInput(aggregator.Tones);
 				holdFilters[c].Process(aggregator.Tones, 0.02f, 1);
 				for (int i = 0; i < LunaConnectionBase.ledCount; ++i)
                 {
@@ -53,28 +48,15 @@ namespace Luna
                 }
             }
 
-			float power = 0;
-			for (int i = 0; i < 120; ++i)
-			{
-				averages[i].Add(powers[i]);
-				float v = powers[i] - averages[i].Value;
-				power += v * v;
-			}
+			beatDetector.Analyze();
 
-			powerBuffer.Push(power / 10000 + 0.5f);
-			powerProcessor.Process(powerBuffer);
+			beatDetector.Visualize(spectrumViz);
 
-			int count = 100;
-			float[] amp = new float[count];
-			for(int i = 0; i < count; ++i)
-			{
-				amp[i] = powerProcessor.Bins[i + 1] + 2.5f;
-			}
+			if (beatDetector.HasBeat) beatIntensity = 0.1f;
 
-			if(spectrumViz != null)
-			{
-				spectrumViz.amplitudes = amp;
-			}
+			beatIntensity = Math.Max(0, beatIntensity - 0.01f);
+
+			luna.whiteLeft = luna.whiteRight = beatIntensity;
         }
 
         public override void Exit()
@@ -94,14 +76,7 @@ namespace Luna
 			for(int c = 0; c < channelCount; ++c){
 				holdFilters[c] = new HoldFilter(count);
 			}
-
-			powerBuffer = new Utility.CircularBuffer<float>(2048);
-			powerProcessor = new FFTProcessor(11, 10, 1);
-			averages = new MovingAverage[count];
-			for(int i = 0; i < count; ++i)
-			{
-				averages[i] = new MovingAverage(200);
-			}
+			beatDetector = new BeatDetector(count, 100);
 		}
         
     }

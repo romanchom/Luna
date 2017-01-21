@@ -117,6 +117,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Audio\AudioCapture.cs" />
+    <Compile Include="Audio\BeatDetector.cs" />
     <Compile Include="Audio\RainbowPerOctave.cs" />
     <Compile Include="Audio\ToneAggregator.cs" />
     <Compile Include="Audio\FFTProcessor.cs" />

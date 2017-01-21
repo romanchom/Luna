@@ -13,15 +13,18 @@ namespace Luna.Audio
 		public int WindowSize {
 			get; private set;
 		}
-		public float[] Bins
+		public float[] Magnitudes
+		{
+			get;
+			private set;
+		}
+		public float[] Phases
 		{
 			get;
 			private set;
 		}
 
-		private float maximumEnergy;
-
-		public FFTProcessor(int exponentOfTwo, float logarithmBase, float unitsPerDecade)
+		public FFTProcessor(int exponentOfTwo, float logarithmBase, float unitsPerDecade, bool magnitude = true, bool phase = false)
 		{
 			exponent = exponentOfTwo;
 			WindowSize = 1 << exponentOfTwo;
@@ -29,7 +32,8 @@ namespace Luna.Audio
 
 			fftBuffer = new Complex[WindowSize];
 			windowFunction = new float[WindowSize];
-			Bins = new float[WindowSize];
+			if(magnitude) Magnitudes = new float[WindowSize];
+			if (phase) Phases = new float[WindowSize];
 
 			for (int i = 0; i < WindowSize; ++i){
 				windowFunction[i] = (float)FastFourierTransform.BlackmannHarrisWindow(i, WindowSize);
@@ -40,23 +44,29 @@ namespace Luna.Audio
 		{
 			for(int i = 0; i < WindowSize; ++i)
 			{
-				fftBuffer[i].X = buffer[i - WindowSize];
+				fftBuffer[i].X = buffer[-i - 1];
 				fftBuffer[i].Y = 0;
 			}
 
 			FastFourierTransform.FFT(true, exponent, fftBuffer);
 
-			for (int i = 0; i < WindowSize; ++i)
+			if (Magnitudes != null)
 			{
-				float mag = (float) Math.Log(fftBuffer[i].X * fftBuffer[i].X + fftBuffer[i].Y * fftBuffer[i].Y);
-				mag *= logMul; // apply correct logarithm base and sqrt of magnitude
-				Bins[i] = mag;
+				for (int i = 0; i < WindowSize; ++i)
+				{
+					float mag = (float)Math.Log(fftBuffer[i].X * fftBuffer[i].X + fftBuffer[i].Y * fftBuffer[i].Y);
+					mag *= logMul; // apply correct logarithm base and sqrt of magnitude
+					Magnitudes[i] = mag;
+				}
 			}
-		}
 
-		public void Normalize(float norm)
-		{
-
+			if (Phases != null)
+			{
+				for (int i = 0; i < WindowSize; ++i)
+				{
+					Phases[i] = (float)Math.Atan2(fftBuffer[i].Y, fftBuffer[i].X);
+				}
+			}
 		}
 	}
 }

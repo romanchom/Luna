@@ -23,8 +23,8 @@ namespace Luna.Controls
                 for(int i = 0; i < value.Length; ++i)
                 {
                     double pos = value[i];
-                    if (!(pos > 0)) pos = 0;
-                    else if (pos > 1) pos = 1;
+                    if (!(pos > 0)) pos = 0.02f;
+                    else if (pos > 1) pos = 0.98f;
                     pos = (1 - pos) * Size.Height;
                     p[i].X = (float) i * Size.Width / value.Length;
                     p[i].Y = (float) pos;
