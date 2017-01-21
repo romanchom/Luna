@@ -18,22 +18,28 @@ namespace Luna.Audio
 		Utility.CircularBuffer<float> powerBuffer;
 		FFTProcessor powerProcessor;
 
-		private const float bpmLow = 40;
-		private const float bpmHigh = 220;
+		private const float bpmLow = 60;
+		private const float bpmHigh = 180;
 		private readonly int lowBinIndex;
 		private readonly int highBinIndex;
 		private readonly int binCount;
+		private readonly float period;
 
 
+		private float lastPhase = 0;
+		private int periodsSinceBeat;
+		public float BPM { get; private set; }
+		public bool HasBeat	{ get; private set; }
 
 		public BeatDetector(int sampligRate, int bandCount, int length)
 		{
 			this.bandCount = bandCount;
+			period = 1.0f / sampligRate;
 			signalPowers = new float[bandCount];
 			signalAverages = new MovingAverage[bandCount];
 			for (int i = 0; i < bandCount; ++i)
 			{
-				signalAverages[i] = new MovingAverage(50);
+				signalAverages[i] = new MovingAverage(100);
 			}
 
 			powerProcessor = new FFTProcessor(10, 10, 1, true, true);
@@ -46,7 +52,7 @@ namespace Luna.Audio
 			bpmAverages = new MovingAverage[binCount];
 			for(int i = 0; i < binCount; ++i)
 			{
-				bpmAverages[i] = new MovingAverage(50);
+				bpmAverages[i] = new MovingAverage(200);
 			}
 			peakiness = new float[binCount];
 			scores = new float[binCount];
@@ -61,106 +67,98 @@ namespace Luna.Audio
 			}
 		}
 
+		private int beatIndex = -1;
 		public void Analyze()
 		{
 			float power = 0;
 			for (int i = 0; i < bandCount; ++i)
 			{
 				signalAverages[i].Add(signalPowers[i]);
-				float v = signalPowers[i] - signalAverages[i].Value;
-				v = Math.Max(1e-5f, v);
+				float v = signalPowers[i];
 				v *= v;
 				power += v;
 			}
-			power /= bandCount;
+			power += 1e-5f;
 			powerBuffer.Push(power);
 				
 			powerProcessor.Process(powerBuffer);
+			
 
 			for(int i = 0; i < binCount; ++i)
 			{
 				MovingAverage avg = bpmAverages[i];
-				avg.Add(powerProcessor.Magnitudes[lowBinIndex + i]);
-				peakiness[i] = (avg.Value - avg.Variance * 2) + 5;
+				avg.Add(powerProcessor.Magnitudes[lowBinIndex + i] + powerProcessor.Magnitudes[(lowBinIndex + i) * 2]);
+				peakiness[i] = avg.Value;
 			}
 
-			float maxScore = float.NegativeInfinity;
-			int index = -1;
-			for (int i = 0; i < binCount; ++i)
+			if (beatIndex != -1)
 			{
-				scores[i] = GetScore(i + lowBinIndex) * 0.2f;
-				if(scores[i] > maxScore)
-				{
-					index = i;
-					maxScore = scores[i];
-				}
-			}
+				float phase = powerProcessor.Phases[beatIndex + lowBinIndex];
 
-			const float phaseOffset = (float) (Math.PI * (4 - 0));
-			const float PI = (float)(Math.PI);
-			if (index != 1)
-			{
-				float phase = powerProcessor.Phases[index + lowBinIndex];
-				phase = (phase + phaseOffset) % (2 * PI) - PI;
-				
-
-				if (Math.Abs(phase) < PI * 0.2f && phase * lastPhase < 0)
+				if (Math.Abs(phase) < 3.14f * 0.5f && phase * lastPhase < 0)
 				{
 					HasBeat = true;
+					BPM = 60.0f / (periodsSinceBeat * period);
+					periodsSinceBeat = 0;
+					Console.WriteLine(BPM);
+					FindBeat();
 				}
 				else
 				{
+					periodsSinceBeat++;
 					HasBeat = false;
 				}
 				lastPhase = phase;
-			}
-		}
-
-		float GetScore(float index)
-		{
-			float ret = peakiness[(int)Math.Round(index) - lowBinIndex];
-			//ret += GetLowerHarmonicsScore(index / 2);
-			//ret += GetHigherHarmonicsScore(index * 2, 0.5f);
-			return ret;
-		}
-
-		float GetLowerHarmonicsScore(float index)
-		{
-			float ret = 0;
-			if (index > lowBinIndex)
+			} else
 			{
-				ret += peakiness[(int)Math.Round(index) - lowBinIndex];
-				//ret += GetLowerHarmonicsScore(index / 2) / 2;
+				FindBeat();
 			}
-			return ret;
 		}
 
-		float GetHigherHarmonicsScore(float index, float width)
+		private void FindBeat()
 		{
-			int iMin = (int)Math.Round(index - width) - lowBinIndex;
-			iMin = Math.Min(iMin, highBinIndex);
-			int iMax = (int)Math.Round(index + width) - lowBinIndex;
-			iMax = Math.Min(iMax, highBinIndex);
-
-			float ret = 0;
-			for(int i = iMin; i < iMax; ++i)
+			int index = -1;
+			float maxScore = float.NegativeInfinity;
+			for (int i = 0; i < binCount; ++i)
 			{
-				ret += peakiness[i];
+				if (peakiness[i] > maxScore)
+				{
+					index = i;
+					maxScore = peakiness[i];
+				}
 			}
-			//if (ret != 0) ret += GetHigherHarmonicsScore(index * 2, width * 2);
-			return ret;
+
+			float currentScore = beatIndex != -1 ? peakiness[beatIndex] : float.NegativeInfinity;
+			if(index != -1 && currentScore < maxScore - 0.2f)
+			{
+				beatIndex = index;
+			}
 		}
 
-
-		float lastPhase = 0;
-		public bool HasBeat = false;
+		float GetScore(int index)
+		{
+			float ret = peakiness[index - lowBinIndex];
+			
+			return ret;
+		}
+		
 		public void Visualize(Controls.SpectrumVisualizerControl viz)
 		{
-			const float scale = 0.7f;
-			const float offset = 0.0f;
-			float[] src = scores;
-			float[] arr = new float[src.Length];
-			for(int i = 0; i < arr.Length; ++i)
+			float[] src = peakiness;
+			float min = float.PositiveInfinity;
+			float max = float.NegativeInfinity;
+			int count = src.Length;
+			//count = 100;
+			for (int i = 0; i < count; ++i)
+			{
+				min = Math.Min(min, src[i]);
+				max = Math.Max(max, src[i]);
+			}
+
+			float scale = 1.0f / (max - min);
+			float offset = -min * scale;
+			float[] arr = new float[count];
+			for(int i = 0; i < count; ++i)
 			{
 				arr[i] = src[i] * scale + offset;
 			}			

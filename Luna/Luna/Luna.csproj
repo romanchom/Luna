@@ -153,9 +153,9 @@
     <Compile Include="Graphics\ScreenCapture.cs" />
     <Compile Include="Graphics\ScreenQuad.cs" />
     <Compile Include="LunaConnectionBase.cs" />
-    <Compile Include="LunaTcp.cs" />
     <Compile Include="LunaUdp.cs" />
     <Compile Include="Audio\HoldFilter.cs" />
+    <Compile Include="Utility\MovingMin.cs" />
     <Compile Include="Utility\Perlin3D.cs" />
     <Compile Include="Scripts\FlameScript.cs" />
     <Compile Include="Scripts\LightScript.cs" />

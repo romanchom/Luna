@@ -51,14 +51,12 @@ namespace Luna
 			if (beatDetector.HasBeat) beatIntensity = 1.0f;
 
 			beatIntensity = Math.Max(0.0f, beatIntensity - 0.04f);
-
-			float colorBoost = 1.0f + beatIntensity * 4.0f;
-
+			
 			for (int c = 0; c < 2; ++c)
 			{
 				for (int i = 0; i < LunaConnectionBase.ledCount; ++i)
 				{
-					luna.pixels[c][i] = colorBoost * (float)Math.Pow(holdFilters[c].Values[i], 2.2f) * 2 * colors.Colors[i];
+					luna.pixels[c][i] = (float)Math.Pow(holdFilters[c].Values[i], 2.2f) * 2 * colors.Colors[i];
 				}
 			}
 

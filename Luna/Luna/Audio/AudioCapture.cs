@@ -15,7 +15,6 @@ namespace Luna.Audio
 		private int channelCount;
 
 		float[] captureBuffer;
-		int recordBufferPtr;
 
 		public CircularBuffer<float>[] Channels
 		{
@@ -62,7 +61,7 @@ namespace Luna.Audio
 
 				if (captureBuffer == null || captureBuffer.Length < totalSamples) captureBuffer = new float[totalSamples];
 				
-				Marshal.Copy(srcBuffer, captureBuffer, recordBufferPtr, totalSamples);
+				Marshal.Copy(srcBuffer, captureBuffer, 0, totalSamples);
 				
 				audioCapClient.ReleaseBuffer(framesAvailable);
 
