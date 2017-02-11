@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Luna
+namespace Luna.Utility
 {
     class MovingAverage
     {

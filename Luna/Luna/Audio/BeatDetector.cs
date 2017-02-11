@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Luna.Utility;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -42,7 +43,7 @@ namespace Luna.Audio
 				signalAverages[i] = new MovingAverage(100);
 			}
 
-			powerProcessor = new FFTProcessor(10, 10, 1, true, true);
+			powerProcessor = new FFTProcessor(10, true, true);
 			powerBuffer = new Utility.CircularBuffer<float>(powerProcessor.WindowSize);
 
 			lowBinIndex = (int)Math.Floor(powerProcessor.WindowSize * bpmLow / (60 * sampligRate));
@@ -63,7 +64,7 @@ namespace Luna.Audio
 		{
 			for (int i = 0; i < bandCount; ++i)
 			{
-				signalPowers[i] += bands[i];
+				signalPowers[i] += (float)Math.Exp(bands[i]);
 			}
 		}
 
@@ -74,9 +75,10 @@ namespace Luna.Audio
 			for (int i = 0; i < bandCount; ++i)
 			{
 				signalAverages[i].Add(signalPowers[i]);
-				float v = signalPowers[i];
-				v *= v;
-				power += v;
+				float v = signalPowers[i] / signalAverages[i].Value;
+				//v = Math.Max(0, v);
+				v = v * v;
+				power += v > 1.3f ? 1 : 0;
 			}
 			power += 1e-5f;
 			powerBuffer.Push(power);
@@ -87,7 +89,7 @@ namespace Luna.Audio
 			for(int i = 0; i < binCount; ++i)
 			{
 				MovingAverage avg = bpmAverages[i];
-				avg.Add(powerProcessor.Magnitudes[lowBinIndex + i] + powerProcessor.Magnitudes[(lowBinIndex + i) * 2]);
+				avg.Add(powerProcessor.Magnitudes[lowBinIndex + i] + powerProcessor.Magnitudes[(lowBinIndex + i) / 2]);
 				peakiness[i] = avg.Value;
 			}
 

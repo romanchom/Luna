@@ -1,5 +1,6 @@
 ﻿using NAudio.Dsp;
 using System;
+using System.Collections.Generic;
 
 namespace Luna.Audio
 {
@@ -8,7 +9,6 @@ namespace Luna.Audio
 		private readonly Complex[] fftBuffer;
 		private readonly float[] windowFunction;
 		private readonly int exponent;
-		private readonly float logMul;
 
 		public int WindowSize {
 			get; private set;
@@ -24,11 +24,10 @@ namespace Luna.Audio
 			private set;
 		}
 
-		public FFTProcessor(int exponentOfTwo, float logarithmBase, float unitsPerDecade, bool magnitude = true, bool phase = false)
+		public FFTProcessor(int exponentOfTwo, bool magnitude = true, bool phase = false)
 		{
 			exponent = exponentOfTwo;
 			WindowSize = 1 << exponentOfTwo;
-			logMul = (float) (0.5 / Math.Log(logarithmBase)) * unitsPerDecade; // includes sqrt of manitude;
 
 			fftBuffer = new Complex[WindowSize];
 			windowFunction = new float[WindowSize];
@@ -40,12 +39,16 @@ namespace Luna.Audio
 			}
 		}
 
-		public void Process(Utility.CircularBuffer<float> buffer)
+		public void Process(IEnumerable<float> buffer)
 		{
-			for(int i = 0; i < WindowSize; ++i)
+			using (var enumerator = buffer.GetEnumerator())
 			{
-				fftBuffer[i].X = buffer[-i - 1];
-				fftBuffer[i].Y = 0;
+				for (int i = 0; i < WindowSize; ++i)
+				{
+					enumerator.MoveNext();
+					fftBuffer[i].X = enumerator.Current;
+					fftBuffer[i].Y = 0;
+				}
 			}
 
 			FastFourierTransform.FFT(true, exponent, fftBuffer);
@@ -54,8 +57,7 @@ namespace Luna.Audio
 			{
 				for (int i = 0; i < WindowSize; ++i)
 				{
-					float mag = (float)Math.Log(fftBuffer[i].X * fftBuffer[i].X + fftBuffer[i].Y * fftBuffer[i].Y);
-					mag *= logMul; // apply correct logarithm base and sqrt of magnitude
+					float mag = (float) (fftBuffer[i].X * fftBuffer[i].X + fftBuffer[i].Y * fftBuffer[i].Y);
 					Magnitudes[i] = mag;
 				}
 			}
