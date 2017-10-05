@@ -4,11 +4,12 @@ using System.Collections.Generic;
 
 namespace Luna.Utility
 {
-	class CircularBuffer<T> : IEnumerable<T>
+	class CircularBuffer<T> : ICollection<T>
 	{
 		public T[] Buffer { get; private set; }
 		private int pointer;
 		public int Count => Buffer.Length;
+
 
 		public CircularBuffer(int count)
 		{
@@ -22,12 +23,7 @@ namespace Luna.Utility
 			}
 		}
 
-		public void Push(T value)
-		{
-			Buffer[pointer] = value;
-			++pointer;
-			if (pointer == Count) pointer = 0;
-		}
+		public bool IsReadOnly => false;
 
 		public IEnumerator<T> GetEnumerator()
 		{
@@ -37,6 +33,33 @@ namespace Luna.Utility
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return new Enumerator(this);
+		}
+
+		public void Add(T item)
+		{
+			Buffer[pointer] = item;
+			++pointer;
+			if (pointer == Count) pointer = 0;
+		}
+
+		public void Clear()
+		{
+			Array.Clear(Buffer, 0, Buffer.Length);
+		}
+
+		public bool Contains(T item)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			throw new NotImplementedException();
+		}
+
+		public bool Remove(T item)
+		{
+			throw new NotImplementedException();
 		}
 
 		private class Enumerator : IEnumerator<T>

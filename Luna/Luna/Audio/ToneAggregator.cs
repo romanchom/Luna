@@ -34,7 +34,7 @@ namespace Luna.Audio
 			Tones = new float[toneCount];
 		}
 
-		public void Aggregate(float[] magnitudes, float norm)
+		public void Aggregate(float[] magnitudes)
 		{
 			int jl = (int)(lowFrequency * fMul);
 			for (int i = 0; i < toneCount; ++i)

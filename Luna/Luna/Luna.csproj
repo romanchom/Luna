@@ -123,6 +123,7 @@
     <Compile Include="Audio\ToneAggregator.cs" />
     <Compile Include="Audio\FFTProcessor.cs" />
     <Compile Include="Audio\NeuralBeatDetector.cs" />
+    <Compile Include="Audio\SpectrumVizualizer.cs" />
     <Compile Include="Utility\CircularBuffer.cs" />
     <Compile Include="Utility\ColorSpace.cs" />
     <Compile Include="Controls\SpectrumVisualizerControl.cs">

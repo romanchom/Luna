@@ -70,7 +70,7 @@ namespace Luna
             float x2 = x * x;
             float x3 = x2 * x;
 
-            if(t <-2222)
+            if(t < 2222)
             {
                 y = -1.1063814f * x3
                     - 1.34811020f * x2

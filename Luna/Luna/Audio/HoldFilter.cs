@@ -6,9 +6,9 @@ namespace Luna.Audio
 	{
 		public float[] Values { get; private set; }
 
-		public HoldFilter(int length)
+		public HoldFilter(int count)
 		{
-			Values = new float[length];
+			Values = new float[count];
 		}
 
 		public void Process(float[] input, float decrese, float offset)

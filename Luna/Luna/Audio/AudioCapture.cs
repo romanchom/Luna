@@ -16,26 +16,31 @@ namespace Luna.Audio
 
 		float[] captureBuffer;
 
-		public CircularBuffer<float>[] Channels
+		public ICollection<CircularBuffer<float>> Channels
 		{
-			get;
-			private set;
+			get
+			{
+				return channels;
+			}
 		}
+
+
+		private CircularBuffer<float>[] channels;
 
 		public AudioCapture(int samplingRate, int channelCount, int sampleCount)
 		{
 			this.channelCount = channelCount;
 
-			Channels = new CircularBuffer<float>[channelCount];
+			channels = new CircularBuffer<float>[channelCount];
 			for(int c = 0; c < channelCount; ++c){
-				Channels[c] = new CircularBuffer<float>(sampleCount);
+				channels[c] = new CircularBuffer<float>(sampleCount);
 			}
 
 			var enumerator = new MMDeviceEnumerator();
 			var captureDevice = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
 			audioClient = captureDevice.AudioClient;
 
-			long requestedDuration = (long) ((double) sampleCount * 20000000); // number of 100ns intervals
+			long requestedDuration = (long) ((double) sampleCount * 20000000 / samplingRate); // number of 100ns intervals
 
 			audioClient.Initialize(AudioClientShareMode.Shared,
 				AudioClientStreamFlags.Loopback,
@@ -69,7 +74,7 @@ namespace Luna.Audio
 				{
 					for (int i = 0; i < framesAvailable; ++i)
 					{
-						Channels[c].Push(captureBuffer[c + channelCount * i]);
+						channels[c].Push(captureBuffer[c + channelCount * i]);
 					}
 				}
 

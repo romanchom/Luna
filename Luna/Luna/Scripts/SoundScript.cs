@@ -22,40 +22,36 @@ namespace Luna
         private float highFrequency = 12000;
 
 		AudioCapture capture;
-		FFTProcessor processor;
-		ToneAggregator aggregator;
-		RainbowPerOctave colors;
-		HoldFilter[] holdFilters;
+		Audio.SpectrumVizualizer[] vizualizers;
+
 		NeuralBeatDetector beatDetector;
 		FFTProcessor sfftProcessor;
 		MelAggregator sfftAggregator;
 		float beatIntensity = 0;
-		Utility.CircularBuffer<float> test = new Utility.CircularBuffer<float>(200);
-		Utility.MovingAverage normMedian;
 
 		public SpectrumVisualizerControl spectrumViz;
 
         public override void Run()
         {
-			float[] powers = new float[120];
 			capture.ReadPackets();
-			float[] arr = new float[1024];
-			float norm = -12;
-			for (int c = 0; c < 2; ++c)
+			int c = 0;
+			foreach (var channel in capture.Channels)
 			{
-				for(int i = 0; i < 1024; ++i)
-				{
-					arr[i] += capture.Channels[c][i];
-				}
-				processor.Process(capture.Channels[c]);
-				aggregator.Aggregate(processor.Magnitudes, 0);
-				norm = Math.Max(norm, aggregator.GetMaxNorm());
-				aggregator.Normalize(normMedian.Value);
-				holdFilters[c].Process(aggregator.Tones, 0.02f, 1);
+				vizualizers[c].Process(channel);
+				++c;
             }
-			normMedian.Add(norm);
-			 //spectrumViz.amplitudes = aggregator.Tones;
+			spectrumViz.amplitudes = aggregator.Tones;
 
+
+
+			float[] arr = new float[1024];
+			foreach (var channel in capture.Channels)
+			{
+				for (int i = 0; i < 1024; ++i)
+				{
+					arr[i] += channel[i];
+				}
+			}
 			sfftProcessor.Process(arr);
 			for(int i = 0; i < 1024; ++i)
 			{
@@ -64,12 +60,10 @@ namespace Luna
 			sfftAggregator.Aggregate(sfftProcessor.Magnitudes);
 			beatDetector.Feed(sfftAggregator.Result);
 			float isBeat = beatDetector.IsBeat;
-			test.Push(isBeat);
-			spectrumViz.amplitudes = test.ToArray();
 			isBeat = Math.Max(isBeat, beatIntensity);
-			beatIntensity = Math.Max(0.0f, isBeat - 1.0f / 25.0f);
+			beatIntensity = Math.Max(0.0f, isBeat * 0.93f);
 			
-			for (int c = 0; c < 2; ++c)
+			for (c = 0; c < 2; ++c)
 			{
 				for (int i = 0; i < LunaConnectionBase.ledCount; ++i)
 				{
@@ -77,7 +71,7 @@ namespace Luna
 				}
 			}
 
-			//luna.whiteLeft = luna.whiteRight = (float) Math.Pow(beatIntensity, 2.2f) * 0.05f;
+			luna.whiteLeft = luna.whiteRight = beatIntensity * 0.05f;
         }
 
         public override void Exit()
@@ -89,19 +83,16 @@ namespace Luna
         {
 			int count = LunaConnectionBase.ledCount;
 			capture = new AudioCapture(samplingRate, channelCount, 1 << windowSizePot);
-			processor = new FFTProcessor(windowSizePot);
-			aggregator = new ToneAggregator(count, lowFrequency, highFrequency, samplingRate, processor.WindowSize);
-			colors = new RainbowPerOctave(count, lowFrequency, highFrequency);
-			holdFilters = new HoldFilter[channelCount];
-
-			for(int c = 0; c < channelCount; ++c){
-				holdFilters[c] = new HoldFilter(count);
+			vizualizers = new SpectrumVizualizer[channelCount];
+			for(int i = 0; i < channelCount; ++i)
+			{
+				vizualizers[i] = new SpectrumVizualizer(LunaConnectionBase.ledCount, lowFrequency, highFrequency, samplingRate);
 			}
+			
+
 			sfftProcessor = new FFTProcessor(10);
 			sfftAggregator = new MelAggregator(count / 2, lowFrequency, highFrequency, sfftProcessor.WindowSize, samplingRate);
 			beatDetector = new NeuralBeatDetector();
-			normMedian = new Utility.MovingAverage(100);
-			//beatDetector = new BeatDetector(100, count, 100);
 		}
         
     }
